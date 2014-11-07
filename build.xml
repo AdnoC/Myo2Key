@@ -1,0 +1,87 @@
+<project name="Myo2Key" basedir="." default="main">
+
+  <!-- http://eureka.ykyuen.info/2013/11/08/apache-ant-string-to-uppercase-lowercase/ -->
+  <!-- To lower case -->
+  <scriptdef language="javascript" name="lower">
+    <attribute name="string" />
+    <attribute name="to" />
+    project.setProperty(attributes.get("to"),attributes.get("string").toLowerCase());
+  </scriptdef>
+
+  <lower string="${ant.project.name}" to="ant.project.name.lowercase" />
+
+  <!-- Set important files and dirs for this project -->
+  <property name="lib.dir" value="libs"/>
+  <property name="src.dir" value="src"/>
+  <property name="build.dir" value="bin"/>
+  <property name="main-class" value="${ant.project.name.lowercase}/${ant.project.name}"/>
+  <property name="jar.dir" value="jar"/>
+
+  <path id="jars">
+    <fileset dir="${lib.dir}" includes="**/*.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+    <delete dir="${jar.dir}"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="${build.dir}"/>
+    <javac srcdir="${src.dir}" classpathref="jars" includeantruntime="false" debug="off" classpath="${lib.dir}/gson-2.2.4.jar" destdir="${build.dir}" >
+      <compilerarg value="-Xlint:all" />
+    </javac>
+  </target>
+  <target name="build" depends="clean,jar"/>
+
+  <target name="jar" depends="compile">
+    <mkdir dir="${jar.dir}"/>
+    <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${build.dir}" filesetmanifest="skip">
+      <fileset dir="${build.dir}" includes="*.java"/>
+      <zipgroupfileset dir="${lib.dir}" includes="*.jar" excludes=""/>
+
+    <manifest>
+        <attribute name="Main-Class" value="${main-class}"/>
+        <attribute name="Class-Path" value="${mf.classpath}"/>
+    </manifest>
+    </jar>
+    <!--<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${build.dir}" filesetmanifest="skip">-->
+      <!--<fileset dir="${build.dir}" includes="*.java"/>-->
+      <!--<zipfileset dir="${lib.dir}" includes="*.jar" excludes=""/>-->
+      <!--<manifest>-->
+        <!--<attribute name="Main-Class" value="${main-class}"/>-->
+        <!--<attribute name="Class-Path" value="${mf.classpath}"/>-->
+      <!--</manifest>-->
+    <!--</jar>-->
+
+  </target>
+
+  <target name="run" depends="jar">
+    <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"/>
+  </target>
+
+  <target name="main" depends="clean,run"/>
+
+
+  <!-- This stuff is for the Vim plugin Syntastic -->
+  <path id="lib.cp">
+    <fileset dir="${basedir}/">
+      <include name="${lib.dir}/*.jar"/>
+    </fileset>
+  </path>
+
+  <pathconvert property="lib.classpath">
+    <path refid="lib.cp"/>
+    <mapper>
+      <chainedmapper>
+        <flattenmapper/>
+        <globmapper from="*.jar" to="${lib.dir}/*.jar"/>
+      </chainedmapper>
+    </mapper>
+  </pathconvert>
+
+  <target name="cp">
+    <echo>${lib.classpath};${src.dir}</echo>
+  </target>
+
+</project>
