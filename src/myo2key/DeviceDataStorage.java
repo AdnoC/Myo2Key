@@ -26,6 +26,7 @@ public class DeviceDataStorage implements DeviceListener {
   private long orientationTimestamp;
   private long gyroscopeDataTimestamp;
   private long accelerationTimestamp;
+  // TODO: Figure out what tells you what.
 
   public DeviceDataStorage() {
     roll = 0;
