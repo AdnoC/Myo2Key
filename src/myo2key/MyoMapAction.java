@@ -10,5 +10,5 @@ public interface MyoMapAction {
    * Fires the action, and modifies its behavior based on scale.
    * @param scale Modifies to what degree the action is carried out.
    */
-  public void ffireAction(double scale);
+  public void fireAction(double scale);
 }
