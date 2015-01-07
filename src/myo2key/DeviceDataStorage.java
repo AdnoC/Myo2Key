@@ -1,6 +1,6 @@
 package myo2key;
 
-import com.thalmic.myo.DeviceListener;
+import com.thalmic.myo.AbstractDeviceListener;
 import com.thalmic.myo.FirmwareVersion;
 import com.thalmic.myo.Myo;
 import com.thalmic.myo.Pose;
@@ -12,7 +12,9 @@ import com.thalmic.myo.enums.VibrationType;
 import com.thalmic.myo.enums.XDirection;
 
 // A lot of this was taken from com.thalmic.myo.example.DataCollector
-public class DeviceDataStorage implements DeviceListener {
+public class DeviceDataStorage extends AbstractDeviceListener {
+  private static DeviceDataStorage deviceDataStorage = null;
+
   // Is this important?
   private static final int SCALE = 18;
   private double roll;
@@ -28,7 +30,14 @@ public class DeviceDataStorage implements DeviceListener {
   private long accelerationTimestamp;
   // TODO: Figure out what tells you what.
 
-  public DeviceDataStorage() {
+  public static DeviceDataStorage getDDS() {
+    if(deviceDataStorage == null) {
+      deviceDataStorage = new DeviceDataStorage();
+    }
+    return deviceDataStorage;
+  }
+
+  protected DeviceDataStorage() {
     roll = 0;
     pitch = 0;
     yaw = 0;
@@ -110,16 +119,6 @@ public class DeviceDataStorage implements DeviceListener {
   }
 
   @Override
-  public void onArmRecognized(Myo myo, long timestamp, Arm arm, XDirection xDirection) {
-    whichArm = arm;
-  }
-
-  @Override
-  public void onArmLost(Myo myo, long timestamp) {
-    whichArm = null;
-  }
-
-  @Override
   public void onAccelerometerData(Myo myo, long timestamp, Vector3 accel) {
     if(!acceleration.equals(accel)) {
       accelerationTimestamp = timestamp;
@@ -156,10 +155,10 @@ public class DeviceDataStorage implements DeviceListener {
     String yawD = String.format("[%s%s]", repeatCharacter('*', (int) yaw), repeatCharacter(' ', (int) (SCALE - yaw)));
 
     String poseString = null;
-    if (whichArm != null) {
+    if (currentPose != null) {
         String poseTypeString = currentPose.getType()
           .toString();
-        poseString = String.format("[%s][%s%" + (SCALE - poseTypeString.length()) + "s]", whichArm == Arm.ARM_LEFT ? "L" : "R", poseTypeString, " ");
+        poseString = String.format("[%s%" + (SCALE - poseTypeString.length()) + "s]", poseTypeString, " ");
     } else {
         poseString = String.format("[?][%14s]", " ");
     }

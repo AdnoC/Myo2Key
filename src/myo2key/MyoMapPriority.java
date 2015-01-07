@@ -28,4 +28,20 @@ public class MyoMapPriority {
     pId = priorityID;
     pVal = priorityValue;
   }
+
+  /**
+   * Accessor for priority id.
+   * @return priority id.
+   */
+  public int getId() {
+    return pId;
+  }
+
+  /**
+   * Accessor for priority value.
+   * @return priority value.
+   */
+  public int getValue() {
+    return pVal;
+  }
 }

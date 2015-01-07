@@ -24,7 +24,7 @@ public class OnDemandMapModifier implements MyoMapModifier {
 
   /**
    * Constructor which uses the specified cooldown size.
-   * @param cdSize How long the cooldown for this ODMM should be.
+   * @param cdSize How long the cooldown for this ODMM should be in milliseconds.
    */
   public OnDemandMapModifier(long cdSize) {
     cooldownSize = cdSize;
@@ -40,6 +40,7 @@ public class OnDemandMapModifier implements MyoMapModifier {
    * @return The modified actionScale.
    */
   public double modifyAction(double actionScale, long delta) {
+    System.out.println("delta: " + delta + " cd: " + cooldown);
     if(cooldown > 0) {
       if(delta < cooldown) {
         cooldown -= delta;
@@ -48,12 +49,15 @@ public class OnDemandMapModifier implements MyoMapModifier {
         int timesFired = 1;
         delta -= cooldown;
         timesFired += (int) (delta / cooldownSize);
-        cooldown =  delta % cooldownSize;
+        cooldown =  cooldownSize;
+        if(actionScale == 0) {
+          cooldown = 0;
+        }
         return actionScale * timesFired;
       }
     } else if(actionScale != 0) {
       int timesFired = 1 + (int) (delta / cooldownSize);
-      cooldown = delta % cooldownSize;
+      cooldown =  cooldownSize;
       return actionScale * timesFired;
     } else {
       return 0;

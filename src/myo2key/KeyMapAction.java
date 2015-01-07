@@ -34,6 +34,8 @@ public class KeyMapAction implements MyoMapAction {
     }
 
     for(int i = (int) scale; i > 0; i--) {
+      System.out.println("Pressing the key: " + keycode);
+      System.out.println("-------------------------------------------");
       rc.keyPress(keycode);
       rc.keyRelease(keycode);
     }
