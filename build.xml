@@ -16,6 +16,8 @@
   <property name="build.dir" value="bin"/>
   <property name="main-class" value="${ant.project.name.lowercase}/${ant.project.name}"/>
   <property name="jar.dir" value="jar"/>
+  <!--Set value to empty quotes if there is no package-->
+  <property name="package.prefix" value="myo2key."/>
 
   <path id="jars">
     <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -32,7 +34,7 @@
       <compilerarg value="-Xlint:all" />
     </javac>
   </target>
-  <target name="build" depends="clean,jar"/>
+  <target name="build" depends="clean,compile"/>
 
   <target name="jar" depends="compile">
     <mkdir dir="${jar.dir}"/>
@@ -56,8 +58,14 @@
 
   </target>
 
-  <target name="run" depends="jar">
-    <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"/>
+  <target name="run" depends="compile">
+    <java classname="${package.prefix}${ant.project.name}">
+      <classpath refid="run.cp" />
+    </java>
+  </target>
+
+  <target name="runJar" depends="compile">
+    <java jar="${jar.dir}/${ant.project.name}.jar" failonerror="true" fork="true"/>
   </target>
 
   <target name="main" depends="clean,run"/>
@@ -69,6 +77,22 @@
       <include name="${lib.dir}/*.jar"/>
     </fileset>
   </path>
+
+  <path id="build.cp">
+    <path refid="lib.cp"/>
+    <pathelement path="${src.dir}"/>
+  </path>
+
+  <path id="run.cp">
+    <path refid="lib.cp"/>
+    <pathelement path="${build.dir}"/>
+    <!--${package.path}"/>-->
+  </path>
+
+  <pathconvert property="run.classpath" refid="run.cp"/>
+  <target name="rcp">
+    <echo>${run.classpath};${src.dir}</echo>
+  </target>
 
   <pathconvert property="lib.classpath">
     <path refid="lib.cp"/>
