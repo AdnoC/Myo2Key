@@ -46,4 +46,20 @@ public class KeyMapAction implements MyoMapAction {
       }
     }
   }
+
+  /**
+   * Accessor for keycode.
+   * @return The keycode this object uses.
+   */
+  public int getKeycode() {
+    return keycode;
+  }
+
+  /**
+   * Accessor for modifiers.
+   * @return The key modifiers this object uses.
+   */
+  public int[] getModifiers() {
+    return modifiers;
+  }
 }

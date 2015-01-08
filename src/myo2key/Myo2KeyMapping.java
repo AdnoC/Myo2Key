@@ -9,27 +9,33 @@ import java.util.Arrays;
  * @author Adam Cutler
  */
 public class Myo2KeyMapping {
+
   /**
    * If one of the triggers is a movement, get a measure of how fast it was for later
    * A list of things you have to do with the myo in order to activate this mapping.
    * The last one in the list is the primary trigger who's value will be passed to the modifier.
    */
-  ArrayList<MyoMapSource> triggers;
+  protected ArrayList<MyoMapSource> triggers;
 
   /**
    * Modifies how the action is fired.
    */
-  MyoMapModifier modifier;
+  protected MyoMapModifier modifier;
 
   /**
    * The action associated with this mapping.
    */
-  MyoMapAction action;
+  protected MyoMapAction action;
 
   /**
    * The priority of this mapping in regards to other mappings.
    */
-  MyoMapPriority priority;
+  protected MyoMapPriority priority;
+
+  /**
+   * The unique identifier for this mapping.
+   */
+  protected int mapId = -1;
 
   /**
    * A variable to store the computed scale until the action is fired.
@@ -37,17 +43,31 @@ public class Myo2KeyMapping {
   private double actionInput = 0;
 
   /**
-   * Constructor.
+   * Constructor. Called when restoring a mapping, since you would have a mapId.
+   * @param mod A modifier that controls how this mapping is fired.
+   * @param act The action the mapping performs when fired.
+   * @param prio The priority this mapping has.
+   * @param mId The mapId to assign to this mapping.
+   * @param sources One or more MyoMapSources to be used as triggers for this mapping.
+   */
+  public Myo2KeyMapping(MyoMapModifier mod, MyoMapAction act, MyoMapPriority prio, int mId, MyoMapSource... sources) {
+    triggers = new ArrayList<MyoMapSource>(Arrays.asList(sources));
+    modifier = mod;
+    action = act;
+    priority = prio;
+    mapId = mId;
+  }
+
+  /**
+   * Constructor. Used to create new mappings since it assigns a mapId to it.
    * @param mod A modifier that controls how this mapping is fired.
    * @param act The action the mapping performs when fired.
    * @param prio The priority this mapping has.
    * @param sources One or more MyoMapSources to be used as triggers for this mapping.
    */
   public Myo2KeyMapping(MyoMapModifier mod, MyoMapAction act, MyoMapPriority prio, MyoMapSource... sources) {
-    triggers = new ArrayList<MyoMapSource>(Arrays.asList(sources));
-    modifier = mod;
-    action = act;
-    priority = prio;
+    this(mod, act, prio, -1, sources);
+
   }
 
   /**

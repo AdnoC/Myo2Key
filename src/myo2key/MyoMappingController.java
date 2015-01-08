@@ -11,6 +11,11 @@ import java.util.ArrayList;
 public class MyoMappingController {
 
   /**
+   * The mapId that will be assigned to the next created map.
+   */
+  //private static int nextMapId = 0;
+
+  /**
    * The time when the previous cycle occured.
    */
   private long prevCycleTimestamp;
@@ -71,6 +76,60 @@ public class MyoMappingController {
     }
 
     return preppedMappings;
+  }
+
+  /**
+   * Adds a Myo2KeyMapping to track and assigns it a mapId if it does not already have one.
+   * @param map The mapping to add.
+   * @return Null normally, or if map has a mapId that another map has, replaces that and returns it.
+   */
+  public Myo2KeyMapping addMapping(Myo2KeyMapping map) {
+    Myo2KeyMapping oldMap = null;
+    if(map.mapId == -1) {
+      int newId;
+      do {
+        newId = (int)(Math.random() * 1000);
+      } while(getByMapId(newId) != null);
+      map.mapId = newId;
+    } else {
+      oldMap = getByMapId(map.mapId);
+      if(oldMap != null) {
+        mappings.remove(oldMap);
+      }
+    }
+
+    mappings.add(getPriorityIndex(map.getPriority()), map);
+    return oldMap;
+  }
+
+  /**
+   * Get a handled Myo2KeyMapping with the specified mapId.
+   * @param mapId The mapId to look for.
+   * @return The mapping if found, null if not.
+   */
+  public Myo2KeyMapping getByMapId(int mapId) {
+    for(Myo2KeyMapping map : mappings) {
+      if(map.mapId == mapId) {
+        return map;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Finds the index in the list that a certain priority would be at.
+   * @param prio The priority to use when searching.
+   * @return The index.
+   */
+  protected int getPriorityIndex(MyoMapPriority prio) {
+    int index = 0;
+    for(Myo2KeyMapping map : mappings) {
+      if(prio.getId() < map.getPriority().getId() || (prio.getId() == map.getPriority().getId() && prio.getValue() <= map.getPriority().getValue())) {
+        return index;
+      }
+      index++;
+    }
+    return index;
   }
 
   /**

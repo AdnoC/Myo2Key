@@ -83,5 +83,21 @@ public class PoseMapSource implements MyoMapSource {
     active = checkBuffer(active, delta);
     return active ? 1.0 : 0.0;
   }
+
+  /**
+   * Accessor for buffer size.
+   * @return The size of this object's buffer.
+   */
+  public long getBufferSize() {
+    return bufferSize;
+  }
+
+  /**
+   * Accessor for the pose.
+   * @return The pose this object is looking for.
+   */
+  public Pose getPose() {
+    return myPose;
+  }
 }
 

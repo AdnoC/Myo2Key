@@ -18,7 +18,7 @@ public class OnDemandMapModifier implements MyoMapModifier {
    * Default constructor which uses the default cooldown size.
    */
   public OnDemandMapModifier() {
-    cooldownSize = DEFAULT_COOLDOWN_SIZE;
+    cooldownSize = -1;
     cooldown = 0;
   }
 
@@ -48,19 +48,30 @@ public class OnDemandMapModifier implements MyoMapModifier {
       } else {
         int timesFired = 1;
         delta -= cooldown;
-        timesFired += (int) (delta / cooldownSize);
-        cooldown =  cooldownSize;
+        timesFired += (int) (delta / getCooldown());
+        cooldown =  getCooldown();
         if(actionScale == 0) {
           cooldown = 0;
         }
         return actionScale * timesFired;
       }
     } else if(actionScale != 0) {
-      int timesFired = 1 + (int) (delta / cooldownSize);
-      cooldown =  cooldownSize;
+      int timesFired = 1 + (int) (delta / getCooldown());
+      cooldown =  getCooldown();
       return actionScale * timesFired;
     } else {
       return 0;
     }
+  }
+
+  /**
+   * Accessor for cooldown.
+   * @return The cooldown for this object.
+   */
+  public long getCooldown() {
+    if(cooldownSize == -1)
+      return DEFAULT_COOLDOWN_SIZE;
+    else
+      return cooldownSize;
   }
 }
