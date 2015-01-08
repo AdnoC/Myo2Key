@@ -19,7 +19,7 @@ public class MyoMapFactory {
    * These strings are to make sure that no stupid spelling mistakes break loading or saving.
    */
 
-  private static final String MAP_ID_STRING = "Map_Id";
+  private static final String MAP_ID_STRING = "_Id";
   private static final String TRIGGERS_STRING = "Triggers";
   private static final String MODIFIER_STRING = "Modifier";
   private static final String ACTION_STRING = "Action";
@@ -33,6 +33,8 @@ public class MyoMapFactory {
   // Just realized that I use two different terms for basically the same thing in
   // the PoseMapSource and OnDemandMapModifier... Could probably make them the same.
   private static final String COOLDOWN_STRING = "Cooldown";
+  private static final String NUM_SHOTS_STRING = "Number_of_Shots";
+  private static final String NESTED_MOD_STRING = "Nested_Modifier";
 
   private static final String KEYCODE_STRING = "Keycode";
   // Or should I just use MODIFIER_STRING?
@@ -40,6 +42,9 @@ public class MyoMapFactory {
 
   private static final String PRIORITY_ID_STRING = "Priority_Id";
   private static final String PRIORITY_VALUE_STRING = "Priority_Value";
+
+  private static final String SENSATIVITY_STRING = "_Sensativity";
+  private static final String BUTTON_STRING = "Button";
 
   //private static final String
 
@@ -58,7 +63,7 @@ public class MyoMapFactory {
       // Check what type of MyoMapSource it is and act accordingly.
       if(src instanceof PoseMapSource) {
         PoseMapSource pms = (PoseMapSource) src;
-        trig.put(TYPE_STRING, "PoseMapSource");
+        trig.put(TYPE_STRING, "PoseSource");
         trig.put(BUFFER_SIZE_STRING, pms.getBufferSize());
         trig.put(POSE_STRING, pms.getPose().getType());
       }
@@ -71,25 +76,29 @@ public class MyoMapFactory {
     root.put(TRIGGERS_STRING, triggers);
 
     // Then parse the modifier.
-    JSONObject modifier = new JSONObject();
-    if(map.modifier instanceof OnDemandMapModifier) {
-      OnDemandMapModifier odmm = (OnDemandMapModifier) map.modifier;
-      modifier.put(TYPE_STRING, "OnDemandMapModifier");
-      modifier.put(COOLDOWN_STRING, odmm.getCooldown());
-    }
+    JSONObject modifier = convertModifier(map.modifier);
     root.put(MODIFIER_STRING, modifier);
 
     // After that we do the action.
     JSONObject action = new JSONObject();
     if(map.action instanceof KeyMapAction) {
-      KeyMapAction kmp = (KeyMapAction) map.action;
-      action.put(TYPE_STRING, "KeyMapAction");
-      action.put(KEYCODE_STRING, kmp.getKeycode());
+      KeyMapAction kma = (KeyMapAction) map.action;
+      action.put(TYPE_STRING, "KeyAction");
+      action.put(KEYCODE_STRING, kma.getKeycode());
       JSONArray keyMods = new JSONArray();
-      for(int mod : kmp.getModifiers()) {
+      for(int mod : kma.getModifiers()) {
         keyMods.put(mod);
       }
       action.put(KEYMODIFIER_STRING, keyMods);
+    } else if(map.action instanceof MouseMoveMapAction) {
+      MouseMoveMapAction mmma = (MouseMoveMapAction) map.action;
+      action.put(TYPE_STRING, "MouseMoveAction");
+      action.put("X" + SENSATIVITY_STRING, mmma.xSensativity);
+      action.put("Y" + SENSATIVITY_STRING, mmma.ySensativity);
+    } else if(map.action instanceof MouseClickMapAction) {
+      MouseClickMapAction mcma = (MouseClickMapAction) map.action;
+      action.put(TYPE_STRING, "MouseClickAction");
+      action.put(BUTTON_STRING, mcma.buttonMask);
     }
     root.put(ACTION_STRING, action);
 
@@ -134,7 +143,7 @@ public class MyoMapFactory {
     MyoMapAction action = null;
     jobj = source.getJSONObject(ACTION_STRING);
     String type = jobj.getString(TYPE_STRING);
-    if(type.equals("KeyMapAction")) {
+    if(type.equals("KeyAction")) {
       int keycode = jobj.getInt(KEYCODE_STRING);
       JSONArray keyMods = jobj.getJSONArray(KEYMODIFIER_STRING);
       int[] mods = new int[keyMods.length()];
@@ -143,15 +152,20 @@ public class MyoMapFactory {
       }
 
       action = new KeyMapAction(keycode, mods);
+    } else if(type.equals("MouseMoveAction")) {
+      int xSens = jobj.getInt("X" + SENSATIVITY_STRING);
+      int ySens = jobj.getInt("Y" + SENSATIVITY_STRING);
+      action = new MouseMoveMapAction(xSens, ySens);
+    } else if(type.equals("MouseClickAction")) {
+      int buttonMask = jobj.getInt(BUTTON_STRING);
+      MouseClickMapAction mca = new MouseClickMapAction();
+      mca.buttonMask = buttonMask;
+      action = mca;
     }
 
     MyoMapModifier modifier = null;
     jobj = source.getJSONObject(MODIFIER_STRING);
-    type = jobj.getString(TYPE_STRING);
-    if(type.equals("OnDemandMapModifier")) {
-      long cooldown = jobj.getLong(COOLDOWN_STRING);
-      modifier = new OnDemandMapModifier(cooldown);
-    }
+    modifier = createModifier(jobj);
 
     JSONArray jarr = source.getJSONArray(TRIGGERS_STRING);
     MyoMapSource[] triggers = new MyoMapSource[jarr.length()];
@@ -159,7 +173,7 @@ public class MyoMapFactory {
       jobj = jarr.getJSONObject(i);
       type = jobj.getString(TYPE_STRING);
 
-      if(type.equals("PoseMapSource")) {
+      if(type.equals("PoseSource")) {
         long bufferSize = jobj.getLong(BUFFER_SIZE_STRING);
         String poseString = jobj.getString(POSE_STRING);
         PoseType poseType = PoseType.valueOf(poseString);
@@ -170,5 +184,63 @@ public class MyoMapFactory {
 
     return new Myo2KeyMapping(modifier, action, priority, mapId, triggers);
 
+  }
+
+  /**
+   * Creates a JSONObject from a modifier.
+   * Since modifiers can be nested, handle them recursively.
+   * @param mod The modifier to convert.
+   * @return A JSONObject representation of the modifier.
+   */
+  protected static JSONObject convertModifier(MyoMapModifier mod) {
+    JSONObject modifier = new JSONObject();
+    if(mod instanceof OnDemandMapModifier) {
+      OnDemandMapModifier odmm = (OnDemandMapModifier) mod;
+      modifier.put(TYPE_STRING, "OnDemandModifier");
+      modifier.put(COOLDOWN_STRING, odmm.cooldownSize);
+    } else if(mod instanceof OneShotMapModifier) {
+      OneShotMapModifier osmm = (OneShotMapModifier) mod;
+      modifier.put(TYPE_STRING, "OneShotModifier");
+      modifier.put(COOLDOWN_STRING, osmm.cooldownSize);
+    } else if(mod instanceof MultiShotMapModifier) {
+      MultiShotMapModifier msmm = (MultiShotMapModifier) mod;
+      modifier.put(TYPE_STRING, "MultiShotModifier");
+      modifier.put(COOLDOWN_STRING, msmm.cooldownSize);
+      modifier.put(NUM_SHOTS_STRING, msmm.numShots);
+    } else if(mod instanceof ToggleMapModifier) {
+      ToggleMapModifier tmm = (ToggleMapModifier) mod;
+      modifier.put(TYPE_STRING, "ToggleModifier");
+      modifier.put(COOLDOWN_STRING, tmm.cooldownSize);
+      modifier.put(NESTED_MOD_STRING, convertModifier(tmm.nestedMod));
+    }
+
+    return modifier;
+  }
+
+  /**
+   * Creates a MyoMapModifier from a JSONObject.
+   * Since modifiers can be nested, handling them recursively is easy.
+   * @param jobj The JSONObject representation of the modifier.
+   * @return The modifier created from the JSONObject.
+   */
+  protected static MyoMapModifier createModifier(JSONObject jobj) {
+    String type = jobj.getString(TYPE_STRING);
+    if(type.equals("OnDemandModifier")) {
+      long cooldown = jobj.getLong(COOLDOWN_STRING);
+      return new OnDemandMapModifier(cooldown);
+    } else if(type.equals("OneShotModifier")) {
+      long cooldown = jobj.getLong(COOLDOWN_STRING);
+      return new OneShotMapModifier(cooldown);
+    } else if(type.equals("MultiShotModifier")) {
+      long cooldown = jobj.getLong(COOLDOWN_STRING);
+      int num = jobj.getInt(NUM_SHOTS_STRING);
+      return new MultiShotMapModifier(num, cooldown);
+    } else if(type.equals("ToggleModifier")) {
+      long cooldown = jobj.getLong(COOLDOWN_STRING);
+      jobj = jobj.getJSONObject(NESTED_MOD_STRING);
+      return new ToggleMapModifier(createModifier(jobj), cooldown);
+    }
+
+    return null;
   }
 }

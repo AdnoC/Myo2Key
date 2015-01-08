@@ -26,7 +26,7 @@ public class KeyMapAction implements MyoMapAction {
    * @param scale The number of times the key should be pressed.
    */
   public void fireAction(double scale) {
-    RobotController rc = RobotController.getRobotController();
+    RobotController rc = RobotController.getInstance();
     if(modifiers.length > 0) {
       for(int mod : modifiers) {
         rc.keyPress(mod);

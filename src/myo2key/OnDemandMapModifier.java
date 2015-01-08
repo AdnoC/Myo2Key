@@ -5,13 +5,19 @@ package myo2key;
  * @author Adam Cutler
  */
 public class OnDemandMapModifier implements MyoMapModifier {
-  // The default cooldown.
-  protected static final long DEFAULT_COOLDOWN_SIZE = 10;
+  /**
+   * The default cooldown.
+   */
+  protected static long DEFAULT_COOLDOWN_SIZE = 10;
 
-  // How long the cooldown for this instance is.
-  private final long cooldownSize;
+  /**
+   * How long the cooldown for this instance is.
+   */
+  protected final long cooldownSize;
 
-  // How much cooldown remains.
+  /**
+   * How much cooldown remains.
+   */
   private long cooldown;
 
   /**

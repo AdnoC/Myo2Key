@@ -8,7 +8,7 @@ public class Myo2Key {
   public static void main(String[] args) {
     asdf2();
     try {
-      //RobotController rc = RobotController.getRobotController();
+      //RobotController rc = RobotController.getInstance();
       //rc.mouseDeltaMove(50, 100);
       //Hub hub = new Hub();
       //System.out.println("Attempting to find a Myo.");

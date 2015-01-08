@@ -9,7 +9,7 @@ import java.awt.Point;
 public class RobotController extends Robot {
   private static RobotController ROBOT_CONTROLLER = null;
 
-  public static RobotController getRobotController() {
+  public static RobotController getInstance() {
     if(ROBOT_CONTROLLER == null) {
       try {
         ROBOT_CONTROLLER = new RobotController();
