@@ -40,6 +40,10 @@ public class PoseMapSource implements MyoMapSource {
    * @return An updated active value that takes into account the buffer deadzone.
    */
   protected boolean checkBuffer(boolean active, long delta) {
+    // If the buffer is larger than the maximum, set it to max.
+    if(buffer > bufferSize) {
+      buffer = bufferSize;
+    }
     // If the state did not change, update the buffer then
     // return the original active value.
     if(active == wasActive) {
@@ -51,10 +55,6 @@ public class PoseMapSource implements MyoMapSource {
       // If the buffer is not back to full, increment it by the amount of time passed.
       if(buffer < bufferSize) {
         buffer += delta;
-        // If the buffer is larger than the maximum, set it to max.
-        if(buffer > bufferSize) {
-          buffer = bufferSize;
-        }
       }
       return active;
     // If the state changed, reduce the buffer and return the correct value of active
@@ -65,6 +65,7 @@ public class PoseMapSource implements MyoMapSource {
       // If the buffer is depleted, change the stored state and return the original active value.
       if(buffer <= 0) {
         wasActive = active;
+        buffer = -1 * buffer;
         return active;
       // If we still have a buffer, return the previous state of active.
       } else {
@@ -79,7 +80,7 @@ public class PoseMapSource implements MyoMapSource {
    * @return 0 for not triggered, any value up to and including 1 if it was.
    */
   public double actionTriggered(long delta) {
-    boolean active = myPose.getType() == DeviceDataStorage.getDDS().getPose().getType();
+    boolean active = myPose.getType() == DeviceDataStorage.getInstance().getPose().getType();
     active = checkBuffer(active, delta);
     return active ? 1.0 : 0.0;
   }

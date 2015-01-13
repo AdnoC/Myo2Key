@@ -30,7 +30,7 @@ public class DeviceDataStorage extends AbstractDeviceListener {
   private long accelerationTimestamp;
   // TODO: Figure out what tells you what.
 
-  public static DeviceDataStorage getDDS() {
+  public static DeviceDataStorage getInstance() {
     if(deviceDataStorage == null) {
       deviceDataStorage = new DeviceDataStorage();
     }

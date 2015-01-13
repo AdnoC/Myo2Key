@@ -35,6 +35,7 @@ public class MyoMapFactory {
   private static final String COOLDOWN_STRING = "Cooldown";
   private static final String NUM_SHOTS_STRING = "Number_of_Shots";
   private static final String NESTED_MOD_STRING = "Nested_Modifier";
+  private static final String SCALAR_STRING = "Scalar_Value";
 
   private static final String KEYCODE_STRING = "Keycode";
   // Or should I just use MODIFIER_STRING?
@@ -202,16 +203,22 @@ public class MyoMapFactory {
       OneShotMapModifier osmm = (OneShotMapModifier) mod;
       modifier.put(TYPE_STRING, "OneShotModifier");
       modifier.put(COOLDOWN_STRING, osmm.cooldownSize);
-    } else if(mod instanceof MultiShotMapModifier) {
-      MultiShotMapModifier msmm = (MultiShotMapModifier) mod;
-      modifier.put(TYPE_STRING, "MultiShotModifier");
-      modifier.put(COOLDOWN_STRING, msmm.cooldownSize);
-      modifier.put(NUM_SHOTS_STRING, msmm.numShots);
+    } else if(mod instanceof TransparentMapModifier) {
+      modifier.put(TYPE_STRING, "TransparentModifier");
     } else if(mod instanceof ToggleMapModifier) {
       ToggleMapModifier tmm = (ToggleMapModifier) mod;
       modifier.put(TYPE_STRING, "ToggleModifier");
       modifier.put(COOLDOWN_STRING, tmm.cooldownSize);
-      modifier.put(NESTED_MOD_STRING, convertModifier(tmm.nestedMod));
+      modifier.put(NESTED_MOD_STRING, convertModifier(tmm.getNestedModifier()));
+    } else if(mod instanceof ScalarMapModifier) {
+      ScalarMapModifier smm = (ScalarMapModifier) mod;
+      modifier.put(TYPE_STRING, "ScalarModifier");
+      modifier.put(SCALAR_STRING, smm.scalarValue);
+      modifier.put(NESTED_MOD_STRING, convertModifier(smm.getNestedModifier()));
+    } else if(mod instanceof BinaryMapModifier) {
+      BinaryMapModifier bmm = (BinaryMapModifier) mod;
+      modifier.put(TYPE_STRING, "BinaryModifier");
+      modifier.put(NESTED_MOD_STRING, convertModifier(bmm.getNestedModifier()));
     }
 
     return modifier;
@@ -231,14 +238,19 @@ public class MyoMapFactory {
     } else if(type.equals("OneShotModifier")) {
       long cooldown = jobj.getLong(COOLDOWN_STRING);
       return new OneShotMapModifier(cooldown);
-    } else if(type.equals("MultiShotModifier")) {
-      long cooldown = jobj.getLong(COOLDOWN_STRING);
-      int num = jobj.getInt(NUM_SHOTS_STRING);
-      return new MultiShotMapModifier(num, cooldown);
+    } else if(type.equals("TransparentModifier")) {
+      return new TransparentMapModifier();
     } else if(type.equals("ToggleModifier")) {
       long cooldown = jobj.getLong(COOLDOWN_STRING);
       jobj = jobj.getJSONObject(NESTED_MOD_STRING);
       return new ToggleMapModifier(createModifier(jobj), cooldown);
+    } else if(type.equals("ScalarModifier")) {
+      double scalar = jobj.getDouble(SCALAR_STRING);
+      jobj = jobj.getJSONObject(NESTED_MOD_STRING);
+      return new ScalarMapModifier(createModifier(jobj), scalar);
+    } else if(type.equals("BinaryModifier")) {
+      jobj = jobj.getJSONObject(NESTED_MOD_STRING);
+      return new BinaryMapModifier(createModifier(jobj));
     }
 
     return null;

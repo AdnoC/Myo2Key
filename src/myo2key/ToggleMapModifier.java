@@ -8,7 +8,7 @@ package myo2key;
  * @author Adam Cutler
  * @version 
  */
-public class ToggleMapModifier implements MyoMapModifier {
+public class ToggleMapModifier implements NestingMapModifier {
 
   /**
    * The default cooldown.
@@ -90,4 +90,13 @@ public class ToggleMapModifier implements MyoMapModifier {
     else
       return cooldownSize;
   }
+
+  /**
+   * Accessor for the modifier nested within.
+   * @return The modifier nested within this object.
+   */
+  public MyoMapModifier getNestedModifier() {
+    return nestedMod;
+  }
+
 }

@@ -20,7 +20,7 @@ public class Myo2Key {
       //myo.vibrate(VibrationType.VIBRATION_SHORT);
       //myo.unlock(UnlockType.UNLOCK_HOLD);
 
-      //DeviceDataStorage dataStorage = DeviceDataStorage.getDDS();
+      //DeviceDataStorage dataStorage = DeviceDataStorage.getInstance();
       //hub.addListener(dataStorage);
       //MyoMappingController mapController = new MyoMappingController();
 
