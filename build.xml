@@ -16,6 +16,9 @@
   <property name="build.dir" value="bin"/>
   <property name="main-class" value="${ant.project.name.lowercase}/${ant.project.name}"/>
   <property name="jar.dir" value="jar"/>
+  <property name="test.src.dir" value="test"/>
+  <property name="test.build.dir" value="${build.dir}/test" />
+  <property name="report.dir" value="reports" />
   <!--Set value to empty quotes if there is no package-->
   <property name="package.prefix" value="myo2key."/>
 
@@ -30,7 +33,7 @@
 
   <target name="compile">
     <mkdir dir="${build.dir}"/>
-    <javac srcdir="${src.dir}" classpathref="jars" includeantruntime="false" debug="off" classpath="${lib.dir}/gson-2.2.4.jar" destdir="${build.dir}" >
+    <javac srcdir="${src.dir}" classpathref="jars" includeantruntime="false" debug="on" classpath="${build.dir}" destdir="${build.dir}" >
       <compilerarg value="-Xlint:all" />
     </javac>
   </target>
@@ -68,6 +71,44 @@
     <java jar="${jar.dir}/${ant.project.name}.jar" failonerror="true" fork="true"/>
   </target>
 
+  <target name="test" depends="compile">
+    <echo message="Compiling tests" />
+
+    <mkdir dir="${test.build.dir}" />
+    <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" debug="on">
+      <classpath>
+        <path refid="run.cp" />
+        <pathelement location="${test.build.dir}" />
+      </classpath>
+    </javac>
+    <echo message="Running tests" />
+
+    <mkdir dir="${report.dir}" />
+    <junit showoutput="true" printsummary="on"> <!--haltonerror="true" haltonfailure="true"-->
+      <classpath>
+        <pathelement location="${test.build.dir}" />
+        <path refid="run.cp" />
+      </classpath>
+
+      <batchtest todir="${report.dir}">
+        <fileset dir="${test.src.dir}" includes="**/*Test*.java" />
+      </batchtest>
+      <formatter type="plain" usefile="false" />
+
+
+
+      <!--<test name="MyoMapSourceTest" />-->
+      <!--<test name="myo2key.MyoTest" methods="methondName" />-->
+    </junit>
+
+    <!--<junitreport todir="${report.dir}">-->
+      <!--<fileset dir="${report.dir}">-->
+        <!--<include name="TEST-*.xml" />-->
+      <!--</fileset>-->
+      <!--<report format="frames" todir="${report.dir}" />-->
+    <!--</junitreport>-->
+  </target>
+
   <target name="main" depends="clean,run"/>
 
 
@@ -86,7 +127,6 @@
   <path id="run.cp">
     <path refid="lib.cp"/>
     <pathelement path="${build.dir}"/>
-    <!--${package.path}"/>-->
   </path>
 
   <pathconvert property="run.classpath" refid="run.cp"/>
