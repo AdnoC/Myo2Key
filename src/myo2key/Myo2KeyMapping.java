@@ -126,4 +126,12 @@ public class Myo2KeyMapping {
     }
   }
 
+  /**
+   * Accessor for the list of MyoMapSources.
+   * @return A list of MyoMapSources.
+   */
+  public ArrayList<MyoMapSource> getTriggers() {
+    return triggers;
+  }
+
 }
